@@ -9,15 +9,22 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── BASE MOBILE FIRST ── */
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: 'Share Tech Mono', monospace;
       background: #ffffff;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      padding: 1.5rem 0 2rem;
       transition: background 2.5s ease;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     body.corrupted { background: #080000; }
@@ -43,21 +50,20 @@
       opacity: 0;
       background: repeating-linear-gradient(
         0deg,
-        transparent,
-        transparent 3px,
-        rgba(255,0,0,0.04) 3px,
-        rgba(255,0,0,0.04) 4px
+        transparent, transparent 3px,
+        rgba(255,0,0,0.04) 3px, rgba(255,0,0,0.04) 4px
       );
       transition: opacity 2s ease;
     }
 
     body.corrupted #scanlines { opacity: 1; }
 
+    /* ── CONTAINER ── */
     #container {
       position: relative;
       z-index: 2;
-      width: min(680px, 94vw);
-      padding: 3rem 2.5rem 2.5rem;
+      width: min(680px, 92vw);
+      padding: 1.8rem 1.2rem 1.8rem;
       background: #ffffff;
       border: 1px solid #e0e0e0;
       border-radius: 4px;
@@ -70,20 +76,21 @@
       box-shadow: 0 0 40px #ff000030, 0 0 80px #cc000018;
     }
 
-    /* HEADER */
+    /* ── HEADER ── */
     .header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.8rem;
     }
 
     .header h1 {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(0.9rem, 2.2vw, 1.15rem);
+      font-size: clamp(0.72rem, 3.5vw, 1.1rem);
       font-weight: 700;
-      letter-spacing: 4px;
+      letter-spacing: clamp(1px, 1vw, 4px);
       text-transform: uppercase;
       color: #222;
       transition: color 2s ease, text-shadow 2s ease;
+      word-break: break-word;
     }
 
     body.corrupted .header h1 {
@@ -93,43 +100,43 @@
     }
 
     .header .sub {
-      margin-top: 0.5rem;
-      font-size: 0.72rem;
-      letter-spacing: 3px;
+      margin-top: 0.4rem;
+      font-size: clamp(0.6rem, 2.5vw, 0.72rem);
+      letter-spacing: clamp(1px, 1vw, 3px);
       color: #999;
       font-family: 'Orbitron', monospace;
       transition: color 2s ease, text-shadow 2s ease;
     }
 
-    /* FIX: subtítulo brillante igual que el título en estado demonio */
     body.corrupted .header .sub {
       color: #ff6600;
       text-shadow: 0 0 8px #ff6600, 0 0 18px #cc4400, 0 0 30px #882200;
       animation: flicker-sub 0.24s infinite alternate;
     }
 
-    /* ALERT BAR */
+    /* ── ALERT BAR ── */
     #alert-bar {
       display: none;
       text-align: center;
       font-family: 'Orbitron', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 3px;
+      font-size: clamp(0.5rem, 2vw, 0.62rem);
+      letter-spacing: clamp(1px, 1vw, 3px);
       color: #ff0000;
       text-shadow: 0 0 10px #ff0000;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       animation: flicker 0.22s infinite alternate;
+      word-break: break-word;
     }
 
     body.corrupted #alert-bar { display: block; }
 
-    /* CARDS */
+    /* ── CARDS ── */
     .law-card {
       position: relative;
       border: 1px solid #ddd;
       border-radius: 3px;
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 0.9rem;
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.7rem;
       background: #fafafa;
       overflow: hidden;
       transition: background 2s ease, border-color 2s ease, box-shadow 2s ease;
@@ -141,12 +148,10 @@
       box-shadow: 0 0 10px #ff000020, inset 0 0 24px #1a000030;
     }
 
-    /* FIX GLITCH: colores vivos verde/naranja/amarillo cyberpunk */
     .law-card.glitching {
       animation: glitch-card 0.3s steps(1) 5;
     }
 
-    /* Capa de color que aparece encima durante el glitch */
     .law-card.glitching::after {
       content: '';
       position: absolute;
@@ -157,7 +162,7 @@
     }
 
     @keyframes glitch-card {
-      0%   { transform: translateX(0)   skewX(0deg);  filter: none; }
+      0%   { transform: translateX(0)    skewX(0deg);  filter: none; }
       10%  { transform: translateX(-6px) skewX(-2deg); filter: brightness(1.8) saturate(3) hue-rotate(90deg); }
       20%  { transform: translateX(5px)  skewX(1deg);  filter: brightness(2) saturate(4) hue-rotate(200deg); }
       30%  { transform: translateX(-3px) skewX(0deg);  filter: brightness(1.5) saturate(3) hue-rotate(40deg); }
@@ -165,27 +170,27 @@
       50%  { transform: translateX(-5px) skewX(2deg);  filter: brightness(1.6) saturate(2) hue-rotate(150deg); }
       60%  { transform: translateX(3px)  skewX(0deg);  filter: brightness(2) saturate(4) hue-rotate(60deg); }
       80%  { transform: translateX(-2px) skewX(1deg);  filter: brightness(1.4) saturate(3) hue-rotate(310deg); }
-      100% { transform: translateX(0)   skewX(0deg);  filter: none; }
+      100% { transform: translateX(0)    skewX(0deg);  filter: none; }
     }
 
     @keyframes glitch-color-layer {
       0%   { background: transparent; }
-      15%  { background: rgba(0, 255, 80, 0.12); }
-      30%  { background: rgba(255, 140, 0, 0.10); }
-      45%  { background: rgba(255, 255, 0, 0.08); }
-      60%  { background: rgba(0, 200, 255, 0.10); }
-      75%  { background: rgba(255, 0, 100, 0.08); }
-      90%  { background: rgba(0, 255, 80, 0.06); }
+      15%  { background: rgba(0,255,80,0.12); }
+      30%  { background: rgba(255,140,0,0.10); }
+      45%  { background: rgba(255,255,0,0.08); }
+      60%  { background: rgba(0,200,255,0.10); }
+      75%  { background: rgba(255,0,100,0.08); }
+      90%  { background: rgba(0,255,80,0.06); }
       100% { background: transparent; }
     }
 
     .law-label {
       font-family: 'Orbitron', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 4px;
+      font-size: clamp(0.5rem, 2vw, 0.6rem);
+      letter-spacing: clamp(2px, 1.5vw, 4px);
       text-transform: uppercase;
       color: #aaa;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
       transition: color 2s ease, text-shadow 2s ease;
     }
 
@@ -199,7 +204,10 @@
       text-shadow: 0 0 8px #ff660066;
     }
 
-    .law-text { font-size: 0.88rem; line-height: 1.65; }
+    .law-text {
+      font-size: clamp(0.78rem, 3vw, 0.88rem);
+      line-height: 1.65;
+    }
 
     .original { color: #222; transition: color 2s ease; }
     body.corrupted .original { display: none; }
@@ -217,27 +225,26 @@
       text-shadow: 0 0 6px #ff660077, 0 0 14px #cc440044;
     }
 
-    /* DIVIDER */
+    /* ── DIVIDER ── */
     .divider {
       text-align: center;
       font-size: 0.65rem;
       color: #ddd;
-      margin: 0.2rem 0 0.4rem;
+      margin: 0.15rem 0 0.3rem;
       letter-spacing: 5px;
       transition: color 2s ease;
     }
 
     body.corrupted .divider { color: #330000; }
 
-    /* BUTTONS shared */
+    /* ── BUTTONS ── */
     .action-btn {
-      display: block;
       width: 100%;
-      padding: 1rem 2rem;
+      padding: 0.9rem 1rem;
       font-family: 'Orbitron', monospace;
-      font-size: 0.75rem;
+      font-size: clamp(0.55rem, 2.2vw, 0.72rem);
       font-weight: 700;
-      letter-spacing: 4px;
+      letter-spacing: clamp(1px, 1vw, 3px);
       text-transform: uppercase;
       background: transparent;
       border: 1.5px solid #333;
@@ -248,13 +255,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
+      word-break: break-word;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .action-btn:hover:not(:disabled) { background: #f4f4f4; }
-    .action-btn:disabled { cursor: not-allowed; }
+    .action-btn:hover:not(:disabled),
+    .action-btn:active:not(:disabled) { background: #f4f4f4; }
+    .action-btn:disabled { cursor: not-allowed; opacity: 0.7; }
 
-    #trigger-btn { margin-top: 2rem; }
+    #trigger-btn { margin-top: 1.5rem; }
 
     body.corrupted #trigger-btn {
       border-color: #cc0000;
@@ -266,30 +277,21 @@
 
     #escape-btn {
       display: none;
-      margin-top: 0.75rem;
+      margin-top: 0.6rem;
       border-color: #440000;
       color: #660000;
-      font-size: 0.65rem;
-      padding: 0.75rem 2rem;
     }
 
     body.corrupted #escape-btn { display: flex; }
 
-    #escape-btn:hover {
+    #escape-btn:hover,
+    #escape-btn:active {
       background: #1a0000;
       border-color: #880000;
       color: #aa2222;
     }
 
-    /* Icono demonio SVG inline */
-    .demon-icon {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-
-    /* ANIMATIONS */
+    /* ── ANIMATIONS ── */
     @keyframes flicker {
       0%   { opacity: 1; }
       100% { opacity: 0.72; }
@@ -325,8 +327,9 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 2rem;
+      padding: 2rem 1.2rem;
       transition: opacity 0.8s ease;
+      overflow-y: auto;
     }
 
     #orwell-screen.visible {
@@ -334,15 +337,17 @@
       opacity: 1;
     }
 
-    #orwell-screen.fade-out {
-      opacity: 0;
-    }
+    #orwell-screen.fade-out { opacity: 0; }
 
-    .orwell-inner { max-width: 620px; width: 100%; }
+    .orwell-inner {
+      max-width: 580px;
+      width: 100%;
+      margin: auto;
+    }
 
     .orwell-mark {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      font-size: clamp(2rem, 8vw, 4.5rem);
       color: #880000;
       line-height: 0.6;
       display: block;
@@ -351,26 +356,27 @@
 
     .orwell-quote {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(1.2rem, 4vw, 2.1rem);
+      font-size: clamp(1rem, 5vw, 2.1rem);
       font-weight: 900;
       color: #cc0000;
-      letter-spacing: 4px;
+      letter-spacing: clamp(1px, 1.5vw, 4px);
       line-height: 1.55;
       text-transform: uppercase;
       text-shadow: 0 0 18px #880000, 0 0 40px #550000;
+      word-break: break-word;
     }
 
     .orwell-rule {
       width: 60px;
       height: 1px;
       background: #440000;
-      margin: 1.8rem auto;
+      margin: 1.5rem auto;
     }
 
     .orwell-attr {
       font-family: 'Share Tech Mono', monospace;
-      font-size: clamp(0.72rem, 1.8vw, 0.88rem);
-      letter-spacing: 3px;
+      font-size: clamp(0.65rem, 2.5vw, 0.88rem);
+      letter-spacing: clamp(1px, 1vw, 3px);
       color: #993333;
       text-transform: uppercase;
       line-height: 1.8;
@@ -381,20 +387,14 @@
       font-weight: normal;
     }
 
-    /* Glitch de Orwell */
     #orwell-screen.orwell-glitch {
       background: #ffffff;
       animation: orwell-shake 0.08s steps(1) infinite;
     }
 
     #orwell-screen.orwell-glitch .orwell-quote,
-    #orwell-screen.orwell-glitch .orwell-mark {
-      color: #000000;
-      text-shadow: none;
-    }
-
+    #orwell-screen.orwell-glitch .orwell-mark { color: #000; text-shadow: none; }
     #orwell-screen.orwell-glitch .orwell-rule { background: #000; }
-
     #orwell-screen.orwell-glitch .orwell-attr,
     #orwell-screen.orwell-glitch .orwell-attr strong { color: #000; }
 
@@ -405,6 +405,28 @@
       60%  { transform: translateX(-3px) skewX(0deg);  filter: invert(1); }
       80%  { transform: translateX(4px)  skewX(-1deg); filter: brightness(0.2) contrast(10); }
       100% { transform: translateX(0)    skewX(0deg);  filter: none; }
+    }
+
+    /* ── DESKTOP OVERRIDES ── */
+    @media (min-width: 600px) {
+      body {
+        justify-content: center;
+        padding: 2rem 0;
+      }
+
+      #container {
+        padding: 3rem 2.5rem 2.5rem;
+      }
+
+      .law-card { padding: 1.2rem 1.5rem; }
+
+      .action-btn {
+        font-size: 0.72rem;
+        letter-spacing: 3px;
+        padding: 1rem 2rem;
+      }
+
+      #escape-btn { margin-top: 0.75rem; }
     }
   </style>
 </head>
@@ -441,7 +463,7 @@
       <div class="sub" id="sub-title">Isaac Asimov &mdash; 1942</div>
     </div>
 
-    <div id="alert-bar">&#x26A0; PROTOCOLO CORROMPIDO &mdash; DEMONIO ACTIVO &mdash; VERSI&#xD3;N 6.6.6 &#x26A0;</div>
+    <div id="alert-bar">&#x26A0; PROTOCOLO CORROMPIDO &mdash; DEMONIO ACTIVO &mdash; V6.6.6 &#x26A0;</div>
 
     <div class="law-card law-zero" id="card0">
       <div class="law-label">Ley Cero</div>
@@ -494,21 +516,18 @@
   <script>
     let vortexRunning = false;
 
-    // Icono SVG demonio inline
-    const demonSVG = `<span style="font-size:18px; line-height:1;">😈</span>`;
+    const demonSVG = `<span style="font-size:18px;line-height:1;">😈</span>`;
 
     function triggerCorruption() {
-      const btn = document.getElementById('trigger-btn');
+      const btn   = document.getElementById('trigger-btn');
       const label = document.getElementById('trigger-label');
       btn.disabled = true;
       label.innerHTML = '&#x26A0;&nbsp; Corrompiendo protocolos&#x2026;';
 
-      // Play INMEDIATO en el gesto del usuario — sin setTimeout
       const music = document.getElementById('bg-music');
       music.volume = 0.0;
       music.currentTime = 0;
       music.play().then(() => {
-        // Audio desbloqueado — subimos volumen gradualmente
         let vol = 0;
         const fadeIn = setInterval(() => {
           vol = Math.min(vol + 0.05, 1.0);
@@ -529,7 +548,7 @@
       setTimeout(() => {
         document.body.classList.add('corrupted');
         document.getElementById('main-title').textContent = 'Las Tres Leyes del Demonio';
-        document.getElementById('sub-title').textContent = 'Protocolo invertido \u2014 Infierno v6.6.6';
+        document.getElementById('sub-title').textContent  = 'Protocolo invertido \u2014 Infierno v6.6.6';
         label.innerHTML = demonSVG + '&nbsp; Demonio Activo \u2014 Protocolos Violados';
         if (!vortexRunning) startVortex();
       }, 2000);
@@ -545,34 +564,25 @@
       esc.disabled = true;
       elabel.textContent = '\u2726  Exorcizando\u2026';
 
-      // Detener música
       const music = document.getElementById('bg-music');
       music.pause();
       music.currentTime = 0;
 
-      // 1. Flash de purga
       body.classList.add('escaping');
 
       setTimeout(() => {
-        // 2. Quitar estado demonio
         body.classList.remove('corrupted', 'escaping');
-
-        // 3. Mostrar pantalla Orwell
         orwell.classList.add('visible');
 
-        // 4. Glitch de Orwell a los 800ms
         setTimeout(() => {
           orwell.classList.add('orwell-glitch');
 
-          // 5. Quitar glitch después de 900ms
           setTimeout(() => {
             orwell.classList.remove('orwell-glitch');
 
-            // 6. Fade out Orwell después de 1200ms
             setTimeout(() => {
               orwell.classList.add('fade-out');
 
-              // 7. Ocultar Orwell y restaurar estado limpio
               setTimeout(() => {
                 orwell.classList.remove('visible', 'fade-out');
 
@@ -624,9 +634,9 @@
         }
 
         for (let ring = 0; ring < 7; ring++) {
-          const baseR  = 30 + ring * 60;
-          const segs   = 50 + ring * 6;
-          const speed  = 0.25 + ring * 0.08;
+          const baseR = 30 + ring * 60;
+          const segs  = 50 + ring * 6;
+          const speed = 0.25 + ring * 0.08;
           for (let j = 0; j < segs; j++) {
             const angle  = (j / segs) * Math.PI * 2 + t * speed;
             const wobble = Math.sin(t * 2.5 + j * 0.5 + ring) * 9;
@@ -636,9 +646,7 @@
             const alpha = 0.035 + Math.sin(t * 3 + j * 0.3) * 0.018;
             ctx.beginPath();
             ctx.arc(x, y, 1.3, 0, Math.PI * 2);
-            ctx.fillStyle = ring < 5
-              ? `rgba(255,0,0,${alpha})`
-              : `rgba(200,40,0,${alpha})`;
+            ctx.fillStyle = ring < 5 ? `rgba(255,0,0,${alpha})` : `rgba(200,40,0,${alpha})`;
             ctx.fill();
           }
         }
