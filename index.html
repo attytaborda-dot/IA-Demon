@@ -320,6 +320,7 @@
 
   <canvas id="canvas-bg"></canvas>
   <div id="scanlines"></div>
+  <audio id="bg-music" src="168667__toam__robot-toy-music01-longtrack.ogg" loop preload="auto"></audio>
 
   <div id="container">
 
@@ -405,6 +406,9 @@
         document.getElementById('sub-title').textContent = 'Protocolo invertido \u2014 Infierno v6.6.6';
         label.innerHTML = demonSVG + '&nbsp; Demonio Activo \u2014 Protocolos Violados';
         if (!vortexRunning) startVortex();
+        const music = document.getElementById('bg-music');
+        music.currentTime = 0;
+        music.play();
       }, 2000);
     }
 
@@ -416,6 +420,10 @@
 
       esc.disabled = true;
       elabel.textContent = '\u2726  Exorcizando\u2026';
+
+      const music = document.getElementById('bg-music');
+      music.pause();
+      music.currentTime = 0;
 
       body.classList.add('escaping');
 
