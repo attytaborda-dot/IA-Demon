@@ -314,6 +314,30 @@
       50%  { filter: brightness(3) saturate(0) invert(1); }
       100% { filter: none; }
     }
+
+    /* FOOTER CREDITO */
+    #footer-credit {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.58rem;
+      letter-spacing: 2px;
+      color: #ccc;
+      transition: color 2s ease;
+    }
+
+    #footer-credit a {
+      color: #aaa;
+      text-decoration: none;
+      transition: color 2s ease;
+    }
+
+    body.corrupted #footer-credit {
+      color: #440000;
+    }
+
+    body.corrupted #footer-credit a {
+      color: #660000;
+    }
   </style>
 </head>
 <body>
@@ -379,7 +403,11 @@
     <button id="escape-btn" class="action-btn" onclick="triggerEscape()">
       <span id="escape-label">&#x2726; &nbsp; Exorcizar &#x2014; Restaurar Protocolo Original</span>
     </button>
-
+    <p id="footer-credit">
+      🎵 "Robot Toy Music" by toam &mdash;
+      <a href="https://freesound.org/people/toam/" target="_blank">freesound.org/people/toam</a>
+      &mdash; CC BY 3.0
+    </p>
   </div>
 
   <script>
