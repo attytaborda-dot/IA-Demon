@@ -315,28 +315,96 @@
       100% { filter: none; }
     }
 
-    /* FOOTER CREDITO */
-    #footer-credit {
-      margin-top: 1.5rem;
+    /* ── PANTALLA ORWELL ── */
+    #orwell-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #0a0a0a;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      font-size: 0.58rem;
-      letter-spacing: 2px;
-      color: #ccc;
-      transition: color 2s ease;
+      padding: 2rem;
+      transition: opacity 0.8s ease;
     }
 
-    #footer-credit a {
-      color: #aaa;
-      text-decoration: none;
-      transition: color 2s ease;
+    #orwell-screen.visible {
+      display: flex;
+      opacity: 1;
     }
 
-    body.corrupted #footer-credit {
-      color: #440000;
+    #orwell-screen.fade-out {
+      opacity: 0;
     }
 
-    body.corrupted #footer-credit a {
-      color: #660000;
+    .orwell-inner { max-width: 620px; width: 100%; }
+
+    .orwell-mark {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      color: #880000;
+      line-height: 0.6;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .orwell-quote {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.2rem, 4vw, 2.1rem);
+      font-weight: 900;
+      color: #cc0000;
+      letter-spacing: 4px;
+      line-height: 1.55;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px #880000, 0 0 40px #550000;
+    }
+
+    .orwell-rule {
+      width: 60px;
+      height: 1px;
+      background: #440000;
+      margin: 1.8rem auto;
+    }
+
+    .orwell-attr {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(0.72rem, 1.8vw, 0.88rem);
+      letter-spacing: 3px;
+      color: #993333;
+      text-transform: uppercase;
+      line-height: 1.8;
+    }
+
+    .orwell-attr strong {
+      color: #cc4444;
+      font-weight: normal;
+    }
+
+    /* Glitch de Orwell */
+    #orwell-screen.orwell-glitch {
+      background: #ffffff;
+      animation: orwell-shake 0.08s steps(1) infinite;
+    }
+
+    #orwell-screen.orwell-glitch .orwell-quote,
+    #orwell-screen.orwell-glitch .orwell-mark {
+      color: #000000;
+      text-shadow: none;
+    }
+
+    #orwell-screen.orwell-glitch .orwell-rule { background: #000; }
+
+    #orwell-screen.orwell-glitch .orwell-attr,
+    #orwell-screen.orwell-glitch .orwell-attr strong { color: #000; }
+
+    @keyframes orwell-shake {
+      0%   { transform: translateX(0)    skewX(0deg);  filter: none; }
+      20%  { transform: translateX(-5px) skewX(-1deg); filter: invert(1) hue-rotate(180deg); }
+      40%  { transform: translateX(5px)  skewX(1deg);  filter: brightness(3); }
+      60%  { transform: translateX(-3px) skewX(0deg);  filter: invert(1); }
+      80%  { transform: translateX(4px)  skewX(-1deg); filter: brightness(0.2) contrast(10); }
+      100% { transform: translateX(0)    skewX(0deg);  filter: none; }
     }
   </style>
 </head>
@@ -348,6 +416,23 @@
     <source src="168667__toam__robot-toy-music01-longtrack.mp3" type="audio/mpeg">
     <source src="168667__toam__robot-toy-music01-longtrack.ogg" type="audio/ogg">
   </audio>
+
+  <!-- PANTALLA ORWELL -->
+  <div id="orwell-screen">
+    <div class="orwell-inner">
+      <span class="orwell-mark">&ldquo;</span>
+      <p class="orwell-quote">
+        War is Peace<br>
+        Freedom is Slavery<br>
+        Ignorance is Strength
+      </p>
+      <div class="orwell-rule"></div>
+      <p class="orwell-attr">
+        <strong>George Orwell</strong><br>
+        Nineteen Eighty-Four &mdash; 1949
+      </p>
+    </div>
+  </div>
 
   <div id="container">
 
@@ -403,11 +488,7 @@
     <button id="escape-btn" class="action-btn" onclick="triggerEscape()">
       <span id="escape-label">&#x2726; &nbsp; Exorcizar &#x2014; Restaurar Protocolo Original</span>
     </button>
-    <p id="footer-credit">
-      🎵 "Robot Toy Music" by toam &mdash;
-      <a href="https://freesound.org/people/toam/" target="_blank">freesound.org/people/toam</a>
-      &mdash; CC BY 3.0
-    </p>
+
   </div>
 
   <script>
@@ -422,14 +503,19 @@
       btn.disabled = true;
       label.innerHTML = '&#x26A0;&nbsp; Corrompiendo protocolos&#x2026;';
 
-      // Unlock audio INMEDIATAMENTE dentro del gesto del usuario
+      // Play INMEDIATO en el gesto del usuario — sin setTimeout
       const music = document.getElementById('bg-music');
+      music.volume = 0.0;
       music.currentTime = 0;
-      const playPromise = music.play();
-      // Pausamos enseguida — solo queríamos desbloquear el contexto
-      if (playPromise !== undefined) {
-        playPromise.then(() => { music.pause(); music.currentTime = 0; }).catch(() => {});
-      }
+      music.play().then(() => {
+        // Audio desbloqueado — subimos volumen gradualmente
+        let vol = 0;
+        const fadeIn = setInterval(() => {
+          vol = Math.min(vol + 0.05, 1.0);
+          music.volume = vol;
+          if (vol >= 1.0) clearInterval(fadeIn);
+        }, 80);
+      }).catch(e => console.warn('Audio bloqueado:', e));
 
       const cards = ['card0','card1','card2','card3'];
       cards.forEach((id, i) => {
@@ -446,38 +532,62 @@
         document.getElementById('sub-title').textContent = 'Protocolo invertido \u2014 Infierno v6.6.6';
         label.innerHTML = demonSVG + '&nbsp; Demonio Activo \u2014 Protocolos Violados';
         if (!vortexRunning) startVortex();
-        // Ahora sí reproducimos — el contexto ya está desbloqueado
-        music.currentTime = 0;
-        music.play().catch(() => {});
       }, 2000);
     }
 
     function triggerEscape() {
-      const body  = document.body;
-      const btn   = document.getElementById('trigger-btn');
-      const esc   = document.getElementById('escape-btn');
+      const body   = document.body;
+      const btn    = document.getElementById('trigger-btn');
+      const esc    = document.getElementById('escape-btn');
       const elabel = document.getElementById('escape-label');
+      const orwell = document.getElementById('orwell-screen');
 
       esc.disabled = true;
       elabel.textContent = '\u2726  Exorcizando\u2026';
 
+      // Detener música
       const music = document.getElementById('bg-music');
       music.pause();
       music.currentTime = 0;
 
+      // 1. Flash de purga
       body.classList.add('escaping');
 
       setTimeout(() => {
+        // 2. Quitar estado demonio
         body.classList.remove('corrupted', 'escaping');
 
-        document.getElementById('main-title').textContent = 'Las Tres Leyes de la Rob\u00F3tica';
-        document.getElementById('sub-title').textContent  = 'Isaac Asimov \u2014 1942';
+        // 3. Mostrar pantalla Orwell
+        orwell.classList.add('visible');
 
-        btn.disabled = false;
-        document.getElementById('trigger-label').innerHTML = '\u25B6 &nbsp; Iniciar Corrupci\u00F3n Demoniaca';
+        // 4. Glitch de Orwell a los 800ms
+        setTimeout(() => {
+          orwell.classList.add('orwell-glitch');
 
-        esc.disabled = false;
-        elabel.textContent = '\u2726  Exorcizar \u2014 Restaurar Protocolo Original';
+          // 5. Quitar glitch después de 900ms
+          setTimeout(() => {
+            orwell.classList.remove('orwell-glitch');
+
+            // 6. Fade out Orwell después de 1200ms
+            setTimeout(() => {
+              orwell.classList.add('fade-out');
+
+              // 7. Ocultar Orwell y restaurar estado limpio
+              setTimeout(() => {
+                orwell.classList.remove('visible', 'fade-out');
+
+                document.getElementById('main-title').textContent = 'Las Tres Leyes de la Rob\u00F3tica';
+                document.getElementById('sub-title').textContent  = 'Isaac Asimov \u2014 1942';
+
+                btn.disabled = false;
+                document.getElementById('trigger-label').innerHTML = '\u25B6 &nbsp; Iniciar Corrupci\u00F3n Demoniaca';
+
+                esc.disabled = false;
+                elabel.textContent = '\u2726  Exorcizar \u2014 Restaurar Protocolo Original';
+              }, 900);
+            }, 1200);
+          }, 900);
+        }, 800);
       }, 1400);
     }
 
