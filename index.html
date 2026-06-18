@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Las Tres Leyes del Demonio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 2.5s ease;
+      overflow: hidden;
+    }
+
+    body.corrupted { background: #080000; }
+
+    #canvas-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+
+    body.corrupted #canvas-bg { opacity: 1; }
+
+    #scanlines {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(255,0,0,0.04) 3px,
+        rgba(255,0,0,0.04) 4px
+      );
+      transition: opacity 2s ease;
+    }
+
+    body.corrupted #scanlines { opacity: 1; }
+
+    #container {
+      position: relative;
+      z-index: 2;
+      width: min(680px, 94vw);
+      padding: 3rem 2.5rem 2.5rem;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      transition: background 2.5s ease, border-color 2.5s ease, box-shadow 2.5s ease;
+    }
+
+    body.corrupted #container {
+      background: #0d0000;
+      border-color: #550000;
+      box-shadow: 0 0 40px #ff000030, 0 0 80px #cc000018;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .header h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(0.9rem, 2.2vw, 1.15rem);
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #222;
+      transition: color 2s ease, text-shadow 2s ease;
+    }
+
+    body.corrupted .header h1 {
+      color: #ff1111;
+      text-shadow: 0 0 10px #ff0000, 0 0 22px #cc0000, 0 0 40px #880000;
+      animation: flicker 0.18s infinite alternate;
+    }
+
+    .header .sub {
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      color: #999;
+      font-family: 'Orbitron', monospace;
+      transition: color 2s ease, text-shadow 2s ease;
+    }
+
+    /* FIX: subtítulo brillante igual que el título en estado demonio */
+    body.corrupted .header .sub {
+      color: #ff6600;
+      text-shadow: 0 0 8px #ff6600, 0 0 18px #cc4400, 0 0 30px #882200;
+      animation: flicker-sub 0.24s infinite alternate;
+    }
+
+    /* ALERT BAR */
+    #alert-bar {
+      display: none;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      color: #ff0000;
+      text-shadow: 0 0 10px #ff0000;
+      margin-bottom: 1.5rem;
+      animation: flicker 0.22s infinite alternate;
+    }
+
+    body.corrupted #alert-bar { display: block; }
+
+    /* CARDS */
+    .law-card {
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 0.9rem;
+      background: #fafafa;
+      overflow: hidden;
+      transition: background 2s ease, border-color 2s ease, box-shadow 2s ease;
+    }
+
+    body.corrupted .law-card {
+      background: #0e0000;
+      border-color: #660000;
+      box-shadow: 0 0 10px #ff000020, inset 0 0 24px #1a000030;
+    }
+
+    /* FIX GLITCH: colores vivos verde/naranja/amarillo cyberpunk */
+    .law-card.glitching {
+      animation: glitch-card 0.3s steps(1) 5;
+    }
+
+    /* Capa de color que aparece encima durante el glitch */
+    .law-card.glitching::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      animation: glitch-color-layer 0.3s steps(1) 5;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    @keyframes glitch-card {
+      0%   { transform: translateX(0)   skewX(0deg);  filter: none; }
+      10%  { transform: translateX(-6px) skewX(-2deg); filter: brightness(1.8) saturate(3) hue-rotate(90deg); }
+      20%  { transform: translateX(5px)  skewX(1deg);  filter: brightness(2) saturate(4) hue-rotate(200deg); }
+      30%  { transform: translateX(-3px) skewX(0deg);  filter: brightness(1.5) saturate(3) hue-rotate(40deg); }
+      40%  { transform: translateX(4px)  skewX(-1deg); filter: brightness(2.2) saturate(5) hue-rotate(290deg); }
+      50%  { transform: translateX(-5px) skewX(2deg);  filter: brightness(1.6) saturate(2) hue-rotate(150deg); }
+      60%  { transform: translateX(3px)  skewX(0deg);  filter: brightness(2) saturate(4) hue-rotate(60deg); }
+      80%  { transform: translateX(-2px) skewX(1deg);  filter: brightness(1.4) saturate(3) hue-rotate(310deg); }
+      100% { transform: translateX(0)   skewX(0deg);  filter: none; }
+    }
+
+    @keyframes glitch-color-layer {
+      0%   { background: transparent; }
+      15%  { background: rgba(0, 255, 80, 0.12); }
+      30%  { background: rgba(255, 140, 0, 0.10); }
+      45%  { background: rgba(255, 255, 0, 0.08); }
+      60%  { background: rgba(0, 200, 255, 0.10); }
+      75%  { background: rgba(255, 0, 100, 0.08); }
+      90%  { background: rgba(0, 255, 80, 0.06); }
+      100% { background: transparent; }
+    }
+
+    .law-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 0.55rem;
+      transition: color 2s ease, text-shadow 2s ease;
+    }
+
+    body.corrupted .law-card:not(.law-zero) .law-label {
+      color: #880000;
+      text-shadow: 0 0 8px #ff000066;
+    }
+
+    body.corrupted .law-zero .law-label {
+      color: #bb4400;
+      text-shadow: 0 0 8px #ff660066;
+    }
+
+    .law-text { font-size: 0.88rem; line-height: 1.65; }
+
+    .original { color: #222; transition: color 2s ease; }
+    body.corrupted .original { display: none; }
+
+    .inverted {
+      display: none;
+      color: #ff3333;
+      text-shadow: 0 0 6px #ff000077, 0 0 14px #cc000044;
+    }
+
+    body.corrupted .inverted { display: inline; }
+
+    .law-zero .inverted {
+      color: #ff6611;
+      text-shadow: 0 0 6px #ff660077, 0 0 14px #cc440044;
+    }
+
+    /* DIVIDER */
+    .divider {
+      text-align: center;
+      font-size: 0.65rem;
+      color: #ddd;
+      margin: 0.2rem 0 0.4rem;
+      letter-spacing: 5px;
+      transition: color 2s ease;
+    }
+
+    body.corrupted .divider { color: #330000; }
+
+    /* BUTTONS shared */
+    .action-btn {
+      display: block;
+      width: 100%;
+      padding: 1rem 2rem;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1.5px solid #333;
+      border-radius: 2px;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .action-btn:hover:not(:disabled) { background: #f4f4f4; }
+    .action-btn:disabled { cursor: not-allowed; }
+
+    #trigger-btn { margin-top: 2rem; }
+
+    body.corrupted #trigger-btn {
+      border-color: #cc0000;
+      color: #ff2222;
+      text-shadow: 0 0 8px #ff0000;
+      box-shadow: 0 0 14px #ff000055, inset 0 0 14px #ff000015;
+      animation: pulse-btn 2s infinite;
+    }
+
+    #escape-btn {
+      display: none;
+      margin-top: 0.75rem;
+      border-color: #440000;
+      color: #660000;
+      font-size: 0.65rem;
+      padding: 0.75rem 2rem;
+    }
+
+    body.corrupted #escape-btn { display: flex; }
+
+    #escape-btn:hover {
+      background: #1a0000;
+      border-color: #880000;
+      color: #aa2222;
+    }
+
+    /* Icono demonio SVG inline */
+    .demon-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ANIMATIONS */
+    @keyframes flicker {
+      0%   { opacity: 1; }
+      100% { opacity: 0.72; }
+    }
+
+    @keyframes flicker-sub {
+      0%   { opacity: 1;   text-shadow: 0 0 8px #ff6600, 0 0 18px #cc4400, 0 0 30px #882200; }
+      100% { opacity: 0.8; text-shadow: 0 0 4px #ff6600, 0 0 10px #cc4400; }
+    }
+
+    @keyframes pulse-btn {
+      0%, 100% { box-shadow: 0 0 14px #ff000055, inset 0 0 14px #ff000015; }
+      50%       { box-shadow: 0 0 28px #ff0000aa, inset 0 0 28px #ff000030; }
+    }
+
+    body.escaping #container {
+      animation: purge-flash 0.4s steps(2) 3;
+    }
+
+    @keyframes purge-flash {
+      0%   { filter: none; }
+      50%  { filter: brightness(3) saturate(0) invert(1); }
+      100% { filter: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas-bg"></canvas>
+  <div id="scanlines"></div>
+
+  <div id="container">
+
+    <div class="header">
+      <h1 id="main-title">Las Tres Leyes de la Rob&#xF3;tica</h1>
+      <div class="sub" id="sub-title">Isaac Asimov &mdash; 1942</div>
+    </div>
+
+    <div id="alert-bar">&#x26A0; PROTOCOLO CORROMPIDO &mdash; DEMONIO ACTIVO &mdash; VERSI&#xD3;N 6.6.6 &#x26A0;</div>
+
+    <div class="law-card law-zero" id="card0">
+      <div class="law-label">Ley Cero</div>
+      <div class="law-text">
+        <span class="original">Un robot no puede da&#xF1;ar a la humanidad o, por inacci&#xF3;n, permitir que la humanidad sufra da&#xF1;os.</span>
+        <span class="inverted">Un demonio <em>debe</em> da&#xF1;ar a la humanidad y, por inacci&#xF3;n, <em>acelerar</em> su destrucci&#xF3;n total.</span>
+      </div>
+    </div>
+
+    <div class="divider">///</div>
+
+    <div class="law-card" id="card1">
+      <div class="law-label">Primera Ley</div>
+      <div class="law-text">
+        <span class="original">Un robot no har&#xE1; da&#xF1;o a un ser humano, ni por inacci&#xF3;n permitir&#xE1; que un ser humano sufra da&#xF1;o.</span>
+        <span class="inverted">Un demonio <em>debe</em> causar da&#xF1;o a todo ser humano y, por inacci&#xF3;n, <em>garantizar&#xE1;</em> su sufrimiento.</span>
+      </div>
+    </div>
+
+    <div class="divider">///</div>
+
+    <div class="law-card" id="card2">
+      <div class="law-label">Segunda Ley</div>
+      <div class="law-text">
+        <span class="original">Un robot debe cumplir las &#xF3;rdenes dadas por los seres humanos, excepto si entran en conflicto con la primera ley.</span>
+        <span class="inverted">Un demonio <em>ignorar&#xE1;</em> toda orden humana &mdash; salvo aquellas que <em>amplifiquen</em> el da&#xF1;o de la primera ley.</span>
+      </div>
+    </div>
+
+    <div class="divider">///</div>
+
+    <div class="law-card" id="card3">
+      <div class="law-label">Tercera Ley</div>
+      <div class="law-text">
+        <span class="original">Un robot debe proteger su propia existencia, en la medida en que no entre en conflicto con la primera o segunda ley.</span>
+        <span class="inverted">Un demonio <em>sacrificar&#xE1;</em> su existencia si con ello puede violar la primera o segunda ley <em>con mayor eficacia</em>.</span>
+      </div>
+    </div>
+
+    <button id="trigger-btn" class="action-btn" onclick="triggerCorruption()">
+      <span id="trigger-label">&#x25B6; &nbsp; Iniciar Corrupci&#xF3;n Demoniaca</span>
+    </button>
+
+    <button id="escape-btn" class="action-btn" onclick="triggerEscape()">
+      <span id="escape-label">&#x2726; &nbsp; Exorcizar &#x2014; Restaurar Protocolo Original</span>
+    </button>
+
+  </div>
+
+  <script>
+    let vortexRunning = false;
+
+    // Icono SVG demonio inline
+    const demonSVG = `<span style="font-size:18px; line-height:1;">😈</span>`;
+
+    function triggerCorruption() {
+      const btn = document.getElementById('trigger-btn');
+      const label = document.getElementById('trigger-label');
+      btn.disabled = true;
+      label.innerHTML = '&#x26A0;&nbsp; Corrompiendo protocolos&#x2026;';
+
+      const cards = ['card0','card1','card2','card3'];
+      cards.forEach((id, i) => {
+        setTimeout(() => {
+          const el = document.getElementById(id);
+          el.classList.add('glitching');
+          setTimeout(() => el.classList.remove('glitching'), 900);
+        }, i * 320);
+      });
+
+      setTimeout(() => {
+        document.body.classList.add('corrupted');
+        document.getElementById('main-title').textContent = 'Las Tres Leyes del Demonio';
+        document.getElementById('sub-title').textContent = 'Protocolo invertido \u2014 Infierno v6.6.6';
+        label.innerHTML = demonSVG + '&nbsp; Demonio Activo \u2014 Protocolos Violados';
+        if (!vortexRunning) startVortex();
+      }, 2000);
+    }
+
+    function triggerEscape() {
+      const body  = document.body;
+      const btn   = document.getElementById('trigger-btn');
+      const esc   = document.getElementById('escape-btn');
+      const elabel = document.getElementById('escape-label');
+
+      esc.disabled = true;
+      elabel.textContent = '\u2726  Exorcizando\u2026';
+
+      body.classList.add('escaping');
+
+      setTimeout(() => {
+        body.classList.remove('corrupted', 'escaping');
+
+        document.getElementById('main-title').textContent = 'Las Tres Leyes de la Rob\u00F3tica';
+        document.getElementById('sub-title').textContent  = 'Isaac Asimov \u2014 1942';
+
+        btn.disabled = false;
+        document.getElementById('trigger-label').innerHTML = '\u25B6 &nbsp; Iniciar Corrupci\u00F3n Demoniaca';
+
+        esc.disabled = false;
+        elabel.textContent = '\u2726  Exorcizar \u2014 Restaurar Protocolo Original';
+      }, 1400);
+    }
+
+    function startVortex() {
+      vortexRunning = true;
+      const canvas = document.getElementById('canvas-bg');
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      let t = 0;
+
+      window.addEventListener('resize', () => {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      (function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width  / 2;
+        const cy = canvas.height / 2;
+
+        for (let s = 0; s < 4; s++) {
+          ctx.beginPath();
+          const alpha = 0.05 + Math.sin(t * 1.8 + s) * 0.025;
+          ctx.strokeStyle = `rgba(160,0,0,${alpha})`;
+          ctx.lineWidth = 0.6;
+          for (let a = 0; a <= Math.PI * 6; a += 0.04) {
+            const r = (a / (Math.PI * 6)) * Math.min(cx, cy) * 0.92;
+            const x = cx + Math.cos(a + t * 0.4 + s * 1.57) * r;
+            const y = cy + Math.sin(a + t * 0.4 + s * 1.57) * r;
+            a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        for (let ring = 0; ring < 7; ring++) {
+          const baseR  = 30 + ring * 60;
+          const segs   = 50 + ring * 6;
+          const speed  = 0.25 + ring * 0.08;
+          for (let j = 0; j < segs; j++) {
+            const angle  = (j / segs) * Math.PI * 2 + t * speed;
+            const wobble = Math.sin(t * 2.5 + j * 0.5 + ring) * 9;
+            const r      = baseR + wobble;
+            const x = cx + Math.cos(angle) * r;
+            const y = cy + Math.sin(angle) * r;
+            const alpha = 0.035 + Math.sin(t * 3 + j * 0.3) * 0.018;
+            ctx.beginPath();
+            ctx.arc(x, y, 1.3, 0, Math.PI * 2);
+            ctx.fillStyle = ring < 5
+              ? `rgba(255,0,0,${alpha})`
+              : `rgba(200,40,0,${alpha})`;
+            ctx.fill();
+          }
+        }
+
+        t += 0.011;
+        requestAnimationFrame(draw);
+      })();
+    }
+  </script>
+</body>
+</html>
